@@ -1,4 +1,5 @@
-class Card {
+class Card 
+{
   [string] $Suit
   [string] $Rank
   
@@ -29,3 +30,9 @@ class Card {
     {return [int]$this.Rank}
   }
 }
+
+$myCard = [Card]::new("3", "H")
+
+Write-Output [string]$myCard
+
+$myCard.points()
