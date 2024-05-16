@@ -23,11 +23,11 @@ class Card
   [int] Points()
   {
     if ($this.Rank -in @("J", "Q", "K")) 
-    {return 10} 
+        {return 10} 
     elseif ($this.Rank -eq "A") 
-    {return 11} 
+        {return 11} 
     else 
-    {return [int]$this.Rank}
+        {return [int]$this.Rank}
   }
 }
 
@@ -83,9 +83,11 @@ $myCard.points()
 Write-Output "Hand class now"
 $myHand = 
 @(
-    [Card]::new("2", "H")
-    , [Card]::new("J", "S")
+    # [Card]::new("2", "H")
+    # , [Card]::new("J", "S")
+    , [Card]::new("9", "D")
     , [Card]::new("A", "D")
+    , [Card]::new("A", "S")
 )
 $myHand2 = [Hand]::new($myHand)
 
