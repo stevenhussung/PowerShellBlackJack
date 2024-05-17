@@ -3,7 +3,10 @@ class Card
   [string] $Suit
   [string] $Rank
   
-  Card() {$this.Init('2', 'H')}
+  Card() 
+  {
+    $this.Init('2', 'H')
+  }
   
   Card([string]$Rank, [string]$Suit)
   {
@@ -14,6 +17,29 @@ class Card
   {
     $this.Rank = $Rank
     $this.Suit = $Suit
+  }
+  
+  static [string[]] Ranks()
+  {
+    return @("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
+  }
+
+  static [string[]] Suits()
+  {
+    return @("H", "D", "S", "C")
+  }
+  
+  static [Card[]] AllCards()
+  {
+    $array = 
+    foreach ($rank in [Card]::Ranks()) 
+    {
+        foreach ($suit in [Card]::Suits()) 
+        {
+            [Card]::new($rank, $suit)
+        }
+    }
+    return $array
   }
   
   [string] ToString() 
@@ -37,7 +63,10 @@ class Hand
     [Card[]] $Cards
 
     # Empty hand for default initialization
-    Card() {$this.Init(@())}
+    Hand()
+    {
+        $this.Init(@())
+    }
 
     Hand([Card[]] $importHand)
     {
@@ -110,3 +139,28 @@ Write-Output $myHand2.ToString()
 Write-Output "Which is" $myHand2.Points() "points"
 Write-Output "With " $myHand2.AceCount() "aces"
 Write-Output "And is the hand soft?" $myHand2.IsHandSoft()
+
+$myHand3 = [Hand]::new()
+Write-Output $myHand3
+
+# Write-Output "Creating the deck"
+# $cardList = [Deck]::new([Card]::AllCards())
+
+# Write-Output "Printing all cards"
+# Write-Output $cardList
+
+$allCards = foreach ($rank in [Card]::Ranks()) 
+{
+    foreach ($suit in [Card]::Suits()) 
+    {
+        # [Card]::new($rank, $suit)
+        "$rank, $suit"
+    }
+}
+
+Write-Output $allCards
+
+Write-Output $allCards[0]
+
+$myCard2 = [Card]::new($allCards[0], $allCards[2])
+Write-Output $myCard2
