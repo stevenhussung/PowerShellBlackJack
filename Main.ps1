@@ -169,44 +169,6 @@ class Deck
     }
 }
 
-
-# $myCard = [Card]::new("K", "H")
-
-# Write-Output [string]$myCard
-
-# $myCard.points()
-
-
-# Write-Output "Hand class now"
-# $myHand = 
-# [Hand]::new(@(
-#     [Card]::new("2", "H")
-#     , [Card]::new("J", "S")
-#     , [Card]::new("9", "D")
-#     , [Card]::new("A", "D")
-#     , [Card]::new("A", "S")
-# ))
-
-# Write-Output $myHand.ToString()
-
-# Write-Output "Which is" $myHand.Points() "points"
-# Write-Output "With " $myHand.AceCount() "aces"
-# Write-Output "And is the hand soft?" $myHand.IsHandSoft()
-
-# Write-Output "Creating the deck"
-
-# $cardList = [Card]::AllCards()
-# $myDeck = [Deck]::new($cardList)
-# Write-Output "There are $($myDeck.Size()) cards in the deck"
-# Write-Output "Here are the cards in the deck:"
-# Write-Output "Shuffling...."
-# $myDeck.Shuffle()
-# Write-Output "Drawing a card"
-# Write-Output $myDeck.Draw()
-# Write-Output "Now here are the cards in the deck:"
-# Write-Output ([string]$myDeck)
-# Write-Output "There are $($myDeck.Size()) cards in the deck"
-
 $ShuffleEveryRound = $true
 
 $ContinueFlag = $true
