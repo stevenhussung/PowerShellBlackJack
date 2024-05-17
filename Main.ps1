@@ -115,6 +115,46 @@ class Hand
     }
 }
 
+class Deck
+{
+    [Card[]] $Cards
+
+    # Full deck for default initialization
+    Deck()
+    {
+        $this.Init([Card]::AllCards())
+    }
+
+    Deck([Card[]] $importCardArray)
+    {
+        $this.Init($importCardArray)
+    }
+
+    [void] Init([Card[]] $importCardArray)
+    {
+        $this.Cards = $importCardArray
+    }
+    
+    [string] ToString() 
+    {
+        return ( $this.Cards | ForEach-Object { [string]$_ } ) -join "`n"
+    }
+    
+    [int] Size()
+    { return $this.Cards.count }
+    
+    [void] Shuffle()
+    { 
+        $this.Cards = $this.Cards | Sort-Object {Get-Random}
+    }
+    
+    [Card] Draw()
+    {
+        ($drawnCard, $this.Cards) = ($this.Cards.Where({1 -eq 1}, 'Split', 1))
+        return $drawnCard
+    }
+}
+
 
 $myCard = [Card]::new("K", "H")
 
@@ -125,42 +165,30 @@ $myCard.points()
 
 Write-Output "Hand class now"
 $myHand = 
-@(
+[Hand]::new(@(
     [Card]::new("2", "H")
     , [Card]::new("J", "S")
     , [Card]::new("9", "D")
     , [Card]::new("A", "D")
     , [Card]::new("A", "S")
-)
-$myHand2 = [Hand]::new($myHand)
+))
 
-Write-Output $myHand2.ToString()
+Write-Output $myHand.ToString()
 
-Write-Output "Which is" $myHand2.Points() "points"
-Write-Output "With " $myHand2.AceCount() "aces"
-Write-Output "And is the hand soft?" $myHand2.IsHandSoft()
+Write-Output "Which is" $myHand.Points() "points"
+Write-Output "With " $myHand.AceCount() "aces"
+Write-Output "And is the hand soft?" $myHand.IsHandSoft()
 
-$myHand3 = [Hand]::new()
-Write-Output $myHand3
+Write-Output "Creating the deck"
 
-# Write-Output "Creating the deck"
-# $cardList = [Deck]::new([Card]::AllCards())
-
-# Write-Output "Printing all cards"
-# Write-Output $cardList
-
-$allCards = foreach ($rank in [Card]::Ranks()) 
-{
-    foreach ($suit in [Card]::Suits()) 
-    {
-        # [Card]::new($rank, $suit)
-        "$rank, $suit"
-    }
-}
-
-Write-Output $allCards
-
-Write-Output $allCards[0]
-
-$myCard2 = [Card]::new($allCards[0], $allCards[2])
-Write-Output $myCard2
+$cardList = [Card]::AllCards()
+$myDeck = [Deck]::new($cardList)
+Write-Output "There are $($myDeck.Size()) cards in the deck"
+Write-Output "Here are the cards in the deck:"
+Write-Output "Shuffling...."
+$myDeck.Shuffle()
+Write-Output "Drawing a card"
+Write-Output $myDeck.Draw()
+Write-Output "Now here are the cards in the deck:"
+Write-Output ([string]$myDeck)
+Write-Output "There are $($myDeck.Size()) cards in the deck"
