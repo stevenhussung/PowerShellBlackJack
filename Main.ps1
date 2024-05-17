@@ -92,6 +92,7 @@ class Hand
         }
         $mainString = $arrayOfStrings -join "`n"
         $mainString += "`n for a " + $this.HandSoftness() + " " + $this.Points()
+        $mainString += "`nIs it a bust?" + $this.IsBust()
         return $mainString
     }
     [int] AceCount()
@@ -121,11 +122,24 @@ class Hand
         #This means that the Ace could "collapse" to bring Points down closer to MinPoints.
         return ($this.MinPoints() -lt $this.Points())        
     }
-    
+
     [string] HandSoftness()
     {
         $returnString = if($this.IsHandSoft()) {"Soft"} else {"Hard"}
         return [string]$returnString
+    }
+    
+    [boolean] IsBust()
+    {
+        return ($this.Points() -gt 21)
+    }
+    
+    [boolean] BeatsHand([Hand] $OtherHand)
+    {
+        return (
+            (-not $this.IsBust()) -and 
+            ($this.Points() -gt $OtherHand.Points() -or $OtherHand.IsBust())
+        )
     }
 }
 
@@ -185,11 +199,13 @@ while($ContinueFlag)
         $DealerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
     }
     
+    #TODO Detect dealt Blackjack
+    
     #Player Hit Stay Loop
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
     $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
-    while($HitFlag -and ($PlayerHand.Points() -le 21))
+    while($HitFlag -and (-not $PlayerHand.IsBust()))
     {
         $PlayerHand.AddCard($Deck.Draw())
         
@@ -201,12 +217,40 @@ while($ContinueFlag)
             $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
         }
         elseif ($PlayerHand.Points() -eq 21)
-        {
-            Write-Output "Perfect!"
-        }
-        {
-            Write-Output "Bust!"
-        }
+        { Write-Output "Perfect!" }
+        { Write-Output "Bust!" }
     }
+    
+    #Dealer Hit Stay Loop
+    while(
+        $DealerHand.Points() -lt 17 -or 
+        ($DealerHand.Points() -eq 17 -and $DealerHand.IsHandSoft())
+    )
+    {
+        $DealerHand.AddCard($Deck.Draw())
+    }
+    
+    #Score
+    Write-Output "Final Hands:"
+    Write-Output "Player Hand:" ([string]$PlayerHand)
+    Write-Output "Dealer Hand:" ([string]$DealerHand)
+    
+    if($PlayerHand.IsBust() -and $DealerHand.IsBust())
+    {
+        Write-Output "Both bust!"
+    }
+    elseif ( $PlayerHand.BeatsHand($DealerHand) )
+    {
+        Write-Output "Player wins!"
+    }
+    elseif ( $DealerHand.BeatsHand($PlayerHand) )
+    {
+        Write-Output "Dealer wins!"
+    }
+    else
+    {
+        Write-Output "Neither player busts, but this is a tie."
+    }
+
     $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
 }
