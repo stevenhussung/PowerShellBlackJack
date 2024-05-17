@@ -84,7 +84,9 @@ class Hand
         ForEach-Object {
             [string]$_
         }
-        return $arrayOfStrings -join "`n"
+        $mainString = $arrayOfStrings -join "`n"
+        $mainString += "`n for a " + $this.HandSoftness() + " " + $this.Points()
+        return $mainString
     }
     [int] AceCount()
     {
@@ -112,6 +114,12 @@ class Hand
         #A hand is soft if an Ace is currently being used as an 11 to increase the points.
         #This means that the Ace could "collapse" to bring Points down closer to MinPoints.
         return ($this.MinPoints() -lt $this.Points())        
+    }
+    
+    [string] HandSoftness()
+    {
+        $returnString = if($this.IsHandSoft()) {"Soft"} else {"Hard"}
+        return [string]$returnString
     }
 }
 
@@ -151,44 +159,67 @@ class Deck
     [Card] Draw()
     {
         ($drawnCard, $this.Cards) = ($this.Cards.Where({1 -eq 1}, 'Split', 1))
-        return $drawnCard
+        return $drawnCard[0]
     }
 }
 
 
-$myCard = [Card]::new("K", "H")
+# $myCard = [Card]::new("K", "H")
 
-Write-Output [string]$myCard
+# Write-Output [string]$myCard
 
-$myCard.points()
+# $myCard.points()
 
 
-Write-Output "Hand class now"
-$myHand = 
-[Hand]::new(@(
-    [Card]::new("2", "H")
-    , [Card]::new("J", "S")
-    , [Card]::new("9", "D")
-    , [Card]::new("A", "D")
-    , [Card]::new("A", "S")
-))
+# Write-Output "Hand class now"
+# $myHand = 
+# [Hand]::new(@(
+#     [Card]::new("2", "H")
+#     , [Card]::new("J", "S")
+#     , [Card]::new("9", "D")
+#     , [Card]::new("A", "D")
+#     , [Card]::new("A", "S")
+# ))
 
-Write-Output $myHand.ToString()
+# Write-Output $myHand.ToString()
 
-Write-Output "Which is" $myHand.Points() "points"
-Write-Output "With " $myHand.AceCount() "aces"
-Write-Output "And is the hand soft?" $myHand.IsHandSoft()
+# Write-Output "Which is" $myHand.Points() "points"
+# Write-Output "With " $myHand.AceCount() "aces"
+# Write-Output "And is the hand soft?" $myHand.IsHandSoft()
 
-Write-Output "Creating the deck"
+# Write-Output "Creating the deck"
 
-$cardList = [Card]::AllCards()
-$myDeck = [Deck]::new($cardList)
-Write-Output "There are $($myDeck.Size()) cards in the deck"
-Write-Output "Here are the cards in the deck:"
-Write-Output "Shuffling...."
-$myDeck.Shuffle()
-Write-Output "Drawing a card"
-Write-Output $myDeck.Draw()
-Write-Output "Now here are the cards in the deck:"
-Write-Output ([string]$myDeck)
-Write-Output "There are $($myDeck.Size()) cards in the deck"
+# $cardList = [Card]::AllCards()
+# $myDeck = [Deck]::new($cardList)
+# Write-Output "There are $($myDeck.Size()) cards in the deck"
+# Write-Output "Here are the cards in the deck:"
+# Write-Output "Shuffling...."
+# $myDeck.Shuffle()
+# Write-Output "Drawing a card"
+# Write-Output $myDeck.Draw()
+# Write-Output "Now here are the cards in the deck:"
+# Write-Output ([string]$myDeck)
+# Write-Output "There are $($myDeck.Size()) cards in the deck"
+
+$ShuffleEveryRound = $true
+
+$ContinueFlag = $true
+while($ContinueFlag)
+{
+
+    #Deal Cards
+    if ($ShuffleEveryRound)
+    {
+        $Deck = [Deck]::new([Card]::AllCards())
+        $Deck.Shuffle()
+        
+        $PlayerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
+        $DealerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
+    }
+    
+    Write-Output "Player Hand:" ([string]$PlayerHand)
+    Write-Output "Dealer Hand:" ([string]$DealerHand)
+
+    #Player Hit Stay Loop
+    $ContinueFlag = $false #((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
+}
