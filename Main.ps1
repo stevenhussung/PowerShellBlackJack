@@ -25,6 +25,7 @@ class Card
     if ($this.Rank -in @("J", "Q", "K")) 
         {return 10} 
     elseif ($this.Rank -eq "A") 
+        #Aces are interpreted as "high" within the Card class. Points can be reduced in the hand class.
         {return 11} 
     else 
         {return [int]$this.Rank}
@@ -60,15 +61,28 @@ class Hand
     {
         return ($this.Cards | Where-Object -Property Rank -eq 'A' | Measure-Object).Count
     }
+    
+    [int] MaxPoints()
+    {
+        return ($this.Cards | ForEach-Object {$_.Points()} | Measure-Object -Sum).Sum
+    }
+
+    [int] MinPoints()
+    {
+        return $this.MaxPoints() - $this.AceCount()*10
+    }
+
     [int] Points()
     {
-        $maxPoints = ($this.Cards | ForEach-Object {$_.Points()} | Measure-Object -Sum).Sum
-        
-        $points = $maxPoints
-        For($i = 1; $i -le $this.AceCount() -and $points -gt 21 ; $i++)
-        { $points -= 10 }
-        
+        For($points = $this.MaxPoints(); $points -gt 21 ; $points -= 10) {}
         return $points 
+    }
+    
+    [boolean] IsHandSoft()
+    {   
+        #A hand is soft if an Ace is currently being used as an 11 to increase the points.
+        #This means that the Ace could "collapse" to bring Points down closer to MinPoints.
+        return ($this.MinPoints() -lt $this.Points())        
     }
 }
 
@@ -95,3 +109,4 @@ Write-Output $myHand2.ToString()
 
 Write-Output "Which is" $myHand2.Points() "points"
 Write-Output "With " $myHand2.AceCount() "aces"
+Write-Output "And is the hand soft?" $myHand2.IsHandSoft()
