@@ -141,6 +141,15 @@ class Hand
             ($this.Points() -gt $OtherHand.Points() -or $OtherHand.IsBust())
         )
     }
+    
+    [boolean] DealerDraws()
+    {
+       #Dealer etiquette 
+       return (
+        $this.Points() -lt 17 -or 
+        ($this.Points() -eq 17 -and $this.IsHandSoft())
+        )
+    }
 }
 
 class Deck
@@ -222,13 +231,8 @@ while($ContinueFlag)
     }
     
     #Dealer Hit Stay Loop
-    while(
-        $DealerHand.Points() -lt 17 -or 
-        ($DealerHand.Points() -eq 17 -and $DealerHand.IsHandSoft())
-    )
-    {
-        $DealerHand.AddCard($Deck.Draw())
-    }
+    while($DealerHand.DealerDraws())
+    { $DealerHand.AddCard($Deck.Draw()) }
     
     #Score
     Write-Output "Final Hands:"
