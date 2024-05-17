@@ -74,7 +74,7 @@ class Hand
 
     [int] Points()
     {
-        For($points = $this.MaxPoints(); $points -gt 21 ; $points -= 10) {}
+        For($points = $this.MaxPoints(); $points -gt 21 -and $points -gt $this.MinPoints(); $points -= 10) {}
         return $points 
     }
     
@@ -97,8 +97,8 @@ $myCard.points()
 Write-Output "Hand class now"
 $myHand = 
 @(
-    # [Card]::new("2", "H")
-    # , [Card]::new("J", "S")
+    [Card]::new("2", "H")
+    , [Card]::new("J", "S")
     , [Card]::new("9", "D")
     , [Card]::new("A", "D")
     , [Card]::new("A", "S")
