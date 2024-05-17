@@ -77,6 +77,12 @@ class Hand
     {
         $this.Cards = $importHand
     }
+    
+    [void] AddCard([Card] $newCard)
+    {
+        $this.Cards += $newCard
+    }
+
     [string] ToString() 
     {
         $arrayOfStrings = 
@@ -217,9 +223,28 @@ while($ContinueFlag)
         $DealerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
     }
     
+    #Player Hit Stay Loop
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
-
-    #Player Hit Stay Loop
-    $ContinueFlag = $false #((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
+    $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
+    while($HitFlag -and ($PlayerHand.Points() -le 21))
+    {
+        $PlayerHand.AddCard($Deck.Draw())
+        
+        Write-Output "Player Hand:" ([string]$PlayerHand)
+        Write-Output "Dealer Hand:" ([string]$DealerHand)
+        
+        if ($PlayerHand.Points() -lt 21)
+        {
+            $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
+        }
+        elseif ($PlayerHand.Points() -eq 21)
+        {
+            Write-Output "Perfect!"
+        }
+        {
+            Write-Output "Bust!"
+        }
+    }
+    $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
 }
