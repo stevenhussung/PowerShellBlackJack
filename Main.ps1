@@ -207,18 +207,17 @@ Function Deal()
         $DealerHand = [Hand]::new(@($Deck.Draw()))
         
         $DealtBlackJack = ($PlayerHand.Points() -eq 21)
-        if($DealtBlackJack) {Write-Output "Dealt Blackjack! Push"}
     }
     while($DealtBlackjack)
     
     return $PlayerHand, $DealerHand, $Deck
 }
 
-Function Score()
+Function Score([Hand]$PlayerHand, [Hand]$DealerHand)
 {
     if($PlayerHand.IsBust() -and $DealerHand.IsBust())
     {
-        Write-Output "Both bust!"
+        Write-Output "Both bust!" "This is an Error"
     }
     elseif ( $PlayerHand.BeatsHand($DealerHand) )
     {
@@ -230,7 +229,7 @@ Function Score()
     }
     else
     {
-        Write-Output "Neither player busts, but this is a tie."
+        Write-Output "Tie!"
     }
     Write-Output "`n`n`n"
 }
@@ -270,7 +269,7 @@ while($ContinueFlag)
     }
     
     #Dealer Hit Stay Loop
-    while($DealerHand.DealerDraws())
+    while($DealerHand.DealerDraws() -and (-not $PlayerHand.isBust()))
     { $DealerHand.AddCard($Deck.Draw()) }
     
     #Score
@@ -278,7 +277,7 @@ while($ContinueFlag)
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
     
-    Score($PlayerHand, $DealerHand)
+    Score -PlayerHand $PlayerHand -DealerHand $DealerHand
 
     $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
 }
