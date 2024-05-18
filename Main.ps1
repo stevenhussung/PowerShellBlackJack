@@ -92,7 +92,6 @@ class Hand
         }
         $mainString = $arrayOfStrings -join "`n"
         $mainString += "`n for a " + $this.HandSoftness() + " " + $this.Points()
-        $mainString += "`nIs it a bust?" + $this.IsBust()
         return $mainString
     }
     [int] AceCount()
@@ -192,21 +191,28 @@ class Deck
     }
 }
 
+#TODO: Make this flag truly work. Game should play either way.
 $ShuffleEveryRound = $true
 
 $ContinueFlag = $true
 while($ContinueFlag)
 {
 
-    #Deal Cards
-    if ($ShuffleEveryRound)
+    do
     {
-        $Deck = [Deck]::new([Card]::AllCards())
-        $Deck.Shuffle()
-        
+        #Deal Cards
+        if ($ShuffleEveryRound)
+        {
+            $Deck = [Deck]::new([Card]::AllCards())
+            $Deck.Shuffle()
+        }
         $PlayerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
-        $DealerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
+        $DealerHand = [Hand]::new(@($Deck.Draw()))
+        
+        $DealtBlackJack = ($PlayerHand.Points() -eq 21)
+        if($DealtBlackJack) {Write-Output "Dealt Blackjack! Push"}
     }
+    while($DealtBlackjack)
     
     #TODO Detect dealt Blackjack
     
@@ -214,6 +220,7 @@ while($ContinueFlag)
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
     $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
+    Write-Output ""
     while($HitFlag -and (-not $PlayerHand.IsBust()))
     {
         $PlayerHand.AddCard($Deck.Draw())
@@ -227,6 +234,7 @@ while($ContinueFlag)
         }
         elseif ($PlayerHand.Points() -eq 21)
         { Write-Output "Perfect!" }
+        else
         { Write-Output "Bust!" }
     }
     
@@ -257,4 +265,5 @@ while($ContinueFlag)
     }
 
     $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
+    Write-Output "`n`n`n"
 }
