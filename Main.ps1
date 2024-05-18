@@ -203,7 +203,7 @@ Function Deal ([Deck]$Deck, [boolean]$ShuffleEveryRound)
         }
         $Deck.Shuffle()
         
-        $PlayerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
+        $PlayerHand = [Hand]::new(@($Deck.Draw()))
         $DealerHand = [Hand]::new(@($Deck.Draw()))
         
         $DealtBlackJack = ($PlayerHand.Points() -eq 21)
@@ -246,11 +246,7 @@ while($ContinueFlag)
     ($PlayerHand, $DealerHand, $Deck) = Deal -Deck $Deck -ShuffleEveryRound $ShuffleEveryRound
     
     #Player Hit Stay Loop
-    Write-Output "Player Hand:" ([string]$PlayerHand)
-    Write-Output "Dealer Hand:" ([string]$DealerHand)
-    $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
-    Write-Output ""
-
+    $HitFlag = $True
     while($HitFlag -and (-not $PlayerHand.IsBust()))
     {
         $PlayerHand.AddCard($Deck.Draw())
