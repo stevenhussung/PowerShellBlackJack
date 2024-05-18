@@ -191,8 +191,7 @@ class Deck
     }
 }
 
-Function Deal()
-# ([Deck]$Deck, [boolean]$ShuffleEveryRound) 
+Function Deal ([Deck]$Deck, [boolean]$ShuffleEveryRound) 
 {
     do
     {
@@ -201,8 +200,9 @@ Function Deal()
         if ($ShuffleEveryRound)
         {
             $Deck = [Deck]::new([Card]::AllCards())
-            $Deck.Shuffle()
         }
+        $Deck.Shuffle()
+        
         $PlayerHand = [Hand]::new(@($Deck.Draw(), $Deck.Draw()))
         $DealerHand = [Hand]::new(@($Deck.Draw()))
         
@@ -235,15 +235,15 @@ Function Score([Hand]$PlayerHand, [Hand]$DealerHand)
 }
 
 #TODO: Make this flag truly work. Game should play either way.
-# $ShuffleEveryRound = $true
-# $Deck = [Deck]::new()
+$ShuffleEveryRound = $true
+$Deck = [Deck]::new()
 
 $ContinueFlag = $true
 while($ContinueFlag)
 {
     # Eventually I would like a persistent deck
     # ($PlayerHand, $DealerHand, $Deck) = Deal($Deck, $ShuffleEveryRound)
-    ($PlayerHand, $DealerHand, $Deck) = Deal
+    ($PlayerHand, $DealerHand, $Deck) = Deal -Deck $Deck -ShuffleEveryRound $ShuffleEveryRound
     
     #Player Hit Stay Loop
     Write-Output "Player Hand:" ([string]$PlayerHand)
