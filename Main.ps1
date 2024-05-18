@@ -191,15 +191,12 @@ class Deck
     }
 }
 
-#TODO: Make this flag truly work. Game should play either way.
-$ShuffleEveryRound = $true
-
-$ContinueFlag = $true
-while($ContinueFlag)
+Function Deal()
+# ([Deck]$Deck, [boolean]$ShuffleEveryRound) 
 {
-
     do
     {
+        $ShuffleEveryRound = $true
         #Deal Cards
         if ($ShuffleEveryRound)
         {
@@ -214,13 +211,47 @@ while($ContinueFlag)
     }
     while($DealtBlackjack)
     
-    #TODO Detect dealt Blackjack
+    return $PlayerHand, $DealerHand, $Deck
+}
+
+Function Score()
+{
+    if($PlayerHand.IsBust() -and $DealerHand.IsBust())
+    {
+        Write-Output "Both bust!"
+    }
+    elseif ( $PlayerHand.BeatsHand($DealerHand) )
+    {
+        Write-Output "Player wins!"
+    }
+    elseif ( $DealerHand.BeatsHand($PlayerHand) )
+    {
+        Write-Output "Dealer wins!"
+    }
+    else
+    {
+        Write-Output "Neither player busts, but this is a tie."
+    }
+    Write-Output "`n`n`n"
+}
+
+#TODO: Make this flag truly work. Game should play either way.
+# $ShuffleEveryRound = $true
+# $Deck = [Deck]::new()
+
+$ContinueFlag = $true
+while($ContinueFlag)
+{
+    # Eventually I would like a persistent deck
+    # ($PlayerHand, $DealerHand, $Deck) = Deal($Deck, $ShuffleEveryRound)
+    ($PlayerHand, $DealerHand, $Deck) = Deal
     
     #Player Hit Stay Loop
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
     $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
     Write-Output ""
+
     while($HitFlag -and (-not $PlayerHand.IsBust()))
     {
         $PlayerHand.AddCard($Deck.Draw())
@@ -247,23 +278,7 @@ while($ContinueFlag)
     Write-Output "Player Hand:" ([string]$PlayerHand)
     Write-Output "Dealer Hand:" ([string]$DealerHand)
     
-    if($PlayerHand.IsBust() -and $DealerHand.IsBust())
-    {
-        Write-Output "Both bust!"
-    }
-    elseif ( $PlayerHand.BeatsHand($DealerHand) )
-    {
-        Write-Output "Player wins!"
-    }
-    elseif ( $DealerHand.BeatsHand($PlayerHand) )
-    {
-        Write-Output "Dealer wins!"
-    }
-    else
-    {
-        Write-Output "Neither player busts, but this is a tie."
-    }
+    Score($PlayerHand, $DealerHand)
 
     $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
-    Write-Output "`n`n`n"
 }
