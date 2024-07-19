@@ -191,6 +191,21 @@ class Deck
     }
 }
 
+Function WithdrawStakeFromBalance ([Ref]$BalanceRef)
+{
+    $Balance = $BalanceRef.value
+    Write-Host "Current balance is " $Balance
+    do
+    {
+        $Stake = [Int](Read-Host "How much would you like your stake to be? Must be in (0, your balance].) ")
+    } while (-not($Stake -gt 0 -and $Stake -le $Balance))
+
+    $Balance -= $Stake
+    $BalanceRef.Value = $Balance
+
+    return $Stake
+}
+
 Function Deal ([Deck]$Deck, [boolean]$ShuffleEveryRound) 
 {
     do
@@ -213,67 +228,103 @@ Function Deal ([Deck]$Deck, [boolean]$ShuffleEveryRound)
     return $PlayerHand, $DealerHand, $Deck
 }
 
-Function Score([Hand]$PlayerHand, [Hand]$DealerHand)
+Function DetermineHit([Hand] $PlayerHand)
 {
-    if($PlayerHand.IsBust() -and $DealerHand.IsBust())
+    if ($PlayerHand.Points() -lt 21)
     {
-        Write-Output "Both bust!" "This is an Error"
+        (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
     }
-    elseif ( $PlayerHand.BeatsHand($DealerHand) )
-    {
-        Write-Output "Player wins!"
+    elseif ($PlayerHand.Points() -eq 21)
+    { 
+        Write-Host "Perfect!" 
+        $false
     }
-    elseif ( $DealerHand.BeatsHand($PlayerHand) )
+    else
+    { 
+        Write-Host "Bust!" 
+        $false
+    }
+}
+
+Function DetermineContinue([Int] $Balance)
+{
+    Write-Host "Current balance is " $Balance
+    if($Balance -le 0.0)
     {
-        Write-Output "Dealer wins!"
+        Write-Host "Well, well, well, look who's out of money"
+        return $false
     }
     else
     {
-        Write-Output "Tie!"
+        return ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
     }
-    Write-Output "`n`n`n"
 }
+Function ResultStakeFactor([Hand]$PlayerHand, [Hand]$DealerHand)
+{
+    #Score
+    Write-Host "Final Hands:"
+    Write-Host "Player Hand:" ([string]$PlayerHand)
+    Write-Host "Dealer Hand:" ([string]$DealerHand)
+    
+    if($PlayerHand.IsBust() -and $DealerHand.IsBust())
+    {
+        Write-Host "Both bust!" "This is an Error"
+        return 1
+    }
+    elseif ( $PlayerHand.BeatsHand($DealerHand) )
+    {
+        Write-Host "Player wins!"
+        return 2
+    }
+    elseif ( $DealerHand.BeatsHand($PlayerHand) )
+    {
+        Write-Host "Dealer wins!"
+        return 0
+    }
+    else
+    {
+        Write-Host "Tie!"
+        return 1
+    }
+    Write-Host "`n`n"
+}
+
 
 #TODO: Make this flag truly work. Game should play either way.
 $ShuffleEveryRound = $true
 $Deck = [Deck]::new()
 
+do
+{
+    $Balance = [Int](Read-Host -Prompt "Enter amount of money to have in balance: ")
+} while($Balance -lt 0)
+
 $ContinueFlag = $true
 while($ContinueFlag)
 {
+    $Stake = WithdrawStakeFromBalance([ref]$Balance)
+
     # Eventually I would like a persistent deck
-    # ($PlayerHand, $DealerHand, $Deck) = Deal($Deck, $ShuffleEveryRound)
     ($PlayerHand, $DealerHand, $Deck) = Deal -Deck $Deck -ShuffleEveryRound $ShuffleEveryRound
     
     #Player Hit Stay Loop
-    $HitFlag = $True
-    while($HitFlag -and (-not $PlayerHand.IsBust()))
-    {
+    do {
         $PlayerHand.AddCard($Deck.Draw())
         
         Write-Output "Player Hand:" ([string]$PlayerHand)
         Write-Output "Dealer Hand:" ([string]$DealerHand)
         
-        if ($PlayerHand.Points() -lt 21)
-        {
-            $HitFlag = (Read-Host "Type 'h' to hit, anything else to stay") -eq "h"
-        }
-        elseif ($PlayerHand.Points() -eq 21)
-        { Write-Output "Perfect!" }
-        else
-        { Write-Output "Bust!" }
+        $HitFlag = DetermineHit($PlayerHand)
     }
+    while($HitFlag -and (-not $PlayerHand.IsBust()))
     
     #Dealer Hit Stay Loop
-    while($DealerHand.DealerDraws() -and (-not $PlayerHand.isBust()))
-    { $DealerHand.AddCard($Deck.Draw()) }
+    if(-not $PlayerHand.IsBust())
+    { 
+        while($DealerHand.DealerDraws())
+        { $DealerHand.AddCard($Deck.Draw()) }
+    }
     
-    #Score
-    Write-Output "Final Hands:"
-    Write-Output "Player Hand:" ([string]$PlayerHand)
-    Write-Output "Dealer Hand:" ([string]$DealerHand)
-    
-    Score -PlayerHand $PlayerHand -DealerHand $DealerHand
-
-    $ContinueFlag = ((Read-Host "Type 'q' to quit, or enter to continue") -ne "q")
+    $Balance += $Stake*(ResultStakeFactor -PlayerHand $PlayerHand -DealerHand $DealerHand)
+    $ContinueFlag = DetermineContinue($Balance)
 }
